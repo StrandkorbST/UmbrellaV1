@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Sync - Goal Architect</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-elevated: #1a1a25;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: #1f1f2e;
+            --text: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #5a5a6a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header-section {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .sync-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.9375rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+
+        .status-connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .sync-info {
+            background: var(--surface-elevated);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .sync-info-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sync-info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+        }
+
+        .sync-info-row:last-child {
+            border-bottom: none;
+        }
+
+        .sync-info-label {
+            color: var(--text-secondary);
+        }
+
+        .sync-info-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .log-container {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            padding: 4px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+        }
+
+        .log-success { color: var(--success); }
+        .log-error { color: var(--danger); }
+        .log-info { color: var(--info); }
+
+        .setup-section {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            margin-top: 24px;
+        }
+
+        .setup-steps {
+            counter-reset: step;
+            list-style: none;
+        }
+
+        .setup-step {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 16px;
+            font-size: 0.9375rem;
+        }
+
+        .setup-step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background: var(--surface-elevated);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .setup-step.done::before {
+            background: var(--success);
+            color: white;
+            content: "✓";
+        }
+
+        .code-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.8125rem;
+            margin: 8px 0;
+            word-break: break-all;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .sync-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">◈</div>
+                <span>Goal Architect</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Goals</a>
+                <a href="birthdays.html" class="nav-link">Birthdays</a>
+                <a href="contacts.html" class="nav-link">Contacts</a>
+                <a href="bookmarks.html" class="nav-link">Bookmarks</a>
+                <a href="phd-tracker.html" class="nav-link">PhD Tracker</a>
+                <a href="backup.html" class="nav-link">Backup</a>
+                <a href="sync.html" class="nav-link active">Cloud Sync</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1 class="header-title">Google Drive Sync</h1>
+            <p class="header-subtitle">Automatic backup and restore from Google Drive</p>
+        </div>
+
+        <div class="sync-card" id="setupPanel">
+            <div class="card-title">
+                <span>⚙️</span>
+                Setup Required
+            </div>
+            <p class="card-desc">To enable automatic Google Drive sync, you need to create a free Google Cloud project:</p>
+            
+            <ol class="setup-steps">
+                <li class="setup-step">
+                    Go to <a href="https://console.cloud.google.com/" target="_blank" style="color: var(--accent);">Google Cloud Console</a>
+                </li>
+                <li class="setup-step">
+                    Create a new project (name it anything, e.g., "Goal Architect Sync")
+                </li>
+                <li class="setup-step">
+                    Enable the <strong>Google Drive API</strong>
+                </li>
+                <li class="setup-step">
+                    Create <strong>OAuth 2.0 credentials</strong> (Web application)
+                </li>
+                <li class="setup-step">
+                    Add your GitHub Pages URL to authorized origins
+                    <div class="code-block">https://yourusername.github.io</div>
+                </li>
+                <li class="setup-step">
+                    Add this redirect URI:
+                    <div class="code-block">https://yourusername.github.io/sync.html</div>
+                </li>
+                <li class="setup-step">
+                    Copy your <strong>Client ID</strong> and paste it below:
+                    <input type="text" id="clientIdInput" class="form-input" style="width: 100%; margin-top: 8px; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);" placeholder="123456789-abc123.apps.googleusercontent.com">
+                </li>
+            </ol>
+
+            <button class="btn btn-primary" onclick="saveClientId()" style="margin-top: 16px;">
+                Save & Connect to Google Drive
+            </button>
+        </div>
+
+        <div class="sync-card" id="syncPanel" style="display: none;">
+            <div class="card-title">
+                <span>☁️</span>
+                Cloud Sync
+            </div>
+            <p class="card-desc">Your data is automatically synced with Google Drive</p>
+
+            <div class="status-indicator status-connected" id="statusConnected">
+                <span>●</span> Connected to Google Drive
+            </div>
+
+            <button class="btn btn-success" onclick="syncToDrive()" id="uploadBtn">
+                <span>↑</span> Upload to Drive (Backup)
+            </button>
+
+            <button class="btn btn-warning" onclick="syncFromDrive()" id="downloadBtn">
+                <span>↓</span> Download from Drive (Restore)
+            </button>
+
+            <button class="btn" onclick="disconnect()">
+                <span>✕</span> Disconnect Account
+            </button>
+
+            <div class="sync-info" id="syncInfo">
+                <div class="sync-info-title">
+                    <span>ℹ️</span> Sync Status
+                </div>
+                <div class="sync-info-row">
+                    <span class="sync-info-label">Last Upload</span>
+                    <span class="sync-info-value" id="lastUpload">Never</span>
+                </div>
+                <div class="sync-info-row">
+                    <span class="sync-info-label">Last Download</span>
+                    <span class="sync-info-value" id="lastDownload">Never</span>
+                </div>
+                <div class="sync-info-row">
+                    <span class="sync-info-label">Drive File ID</span>
+                    <span class="sync-info-value" id="fileId" style="font-size: 0.75rem;">-</span>
+                </div>
+            </div>
+
+            <div class="log-container" id="logContainer">
+                <div class="log-entry"><span class="log-time">--:--</span> Ready to sync</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CLIENT_ID_KEY = 'goal_architect_gdrive_client_id';
+        const TOKEN_KEY = 'goal_architect_gdrive_token';
+        const FILE_ID_KEY = 'goal_architect_gdrive_file_id';
+        const SYNC_INFO_KEY = 'goal_architect_sync_info';
+
+        let gapiInited = false;
+        let gisInited = false;
+        let tokenClient = null;
+
+        // Check if already set up
+        document.addEventListener('DOMContentLoaded', () => {
+            const clientId = localStorage.getItem(CLIENT_ID_KEY);
+            if (clientId) {
+                document.getElementById('clientIdInput').value = clientId;
+                initializeGapi(clientId);
+            }
+        });
+
+        function saveClientId() {
+            const clientId = document.getElementById('clientIdInput').value.trim();
+            if (!clientId || !clientId.includes('.apps.googleusercontent.com')) {
+                alert('Please enter a valid Client ID');
+                return;
+            }
+            localStorage.setItem(CLIENT_ID_KEY, clientId);
+            initializeGapi(clientId);
+        }
+
+        function initializeGapi(clientId) {
+            // Load Google API client
+            const script = document.createElement('script');
+            script.src = 'https://apis.google.com/js/api.js';
+            script.onload = () => {
+                gapi.load('client', async () => {
+                    await gapi.client.init({
+                        apiKey: null, // OAuth only
+                        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+                    });
+                    gapiInited = true;
+                    initializeGis(clientId);
+                });
+            };
+            document.head.appendChild(script);
+        }
+
+        function initializeGis(clientId) {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: 'https://www.googleapis.com/drive.file',
+                callback: handleAuthResponse,
+            });
+            gisInited = true;
+            
+            // Try silent auth if we have a token
+            const savedToken = localStorage.getItem(TOKEN_KEY);
+            if (savedToken) {
+                gapi.client.setToken(JSON.parse(savedToken));
+                showSyncPanel();
+            } else {
+                // Show connect button
+                document.getElementById('setupPanel').innerHTML = `
+                    <div class="card-title">
+                        <span>🔐</span>
+                        Connect to Google Drive
+                    </div>
+                    <p class="card-desc">Click below to authorize access to your Google Drive</p>
+                    <button class="btn btn-primary" onclick="requestAuth()">
+                        <span>🔑</span> Sign in with Google
+                    </button>
+                    <button class="btn" onclick="resetSetup()" style="margin-top: 8px;">
+                        Use different Client ID
+                    </button>
+                `;
+            }
+        }
+
+        function requestAuth() {
+            if (!gisInited) return;
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        }
+
+        function handleAuthResponse(resp) {
+            if (resp.error) {
+                log('Auth failed: ' + resp.error, 'error');
+                return;
+            }
+            localStorage.setItem(TOKEN_KEY, JSON.stringify(gapi.client.getToken()));
+            showSyncPanel();
+        }
+
+        function showSyncPanel() {
+            document.getElementById('setupPanel').style.display = 'none';
+            document.getElementById('syncPanel').style.display = 'block';
+            loadSyncInfo();
+            log('Connected to Google Drive', 'success');
+        }
+
+        function loadSyncInfo() {
+            const info = JSON.parse(localStorage.getItem(SYNC_INFO_KEY) || '{}');
+            if (info.lastUpload) document.getElementById('lastUpload').textContent = new Date(info.lastUpload).toLocaleString();
+            if (info.lastDownload) document.getElementById('lastDownload').textContent = new Date(info.lastDownload).toLocaleString();
+            if (info.fileId) document.getElementById('fileId').textContent = info.fileId;
+        }
+
+        function saveSyncInfo(updates) {
+            const info = JSON.parse(localStorage.getItem(SYNC_INFO_KEY) || '{}');
+            Object.assign(info, updates);
+            localStorage.setItem(SYNC_INFO_KEY, JSON.stringify(info));
+            loadSyncInfo();
+        }
+
+        async function syncToDrive() {
+            const btn = document.getElementById('uploadBtn');
+            btn.disabled = true;
+            log('Preparing backup...', 'info');
+
+            try {
+                // Collect all data
+                const backup = {
+                    version: '2.0',
+                    exportedAt: new Date().toISOString(),
+                    device: navigator.userAgent,
+                    data: {
+                        goals: JSON.parse(localStorage.getItem('goal_architect_goals')) || [],
+                        birthdays: JSON.parse(localStorage.getItem('goal_architect_birthdays')) || [],
+                        contacts: JSON.parse(localStorage.getItem('goal_architect_contacts')) || [],
+                        bookmarks: JSON.parse(localStorage.getItem('goal_architect_bookmarks')) || [],
+                        phd: JSON.parse(localStorage.getItem('goal_architect_phd')) || []
+                    }
+                };
+
+                const content = JSON.stringify(backup);
+                const file = new Blob([content], {type: 'application/json'});
+                
+                // Check for existing file
+                let fileId = JSON.parse(localStorage.getItem(SYNC_INFO_KEY) || '{}').fileId;
+
+                if (fileId) {
+                    // Update existing
+                    log('Updating existing file...', 'info');
+                    await gapi.client.drive.files.update({
+                        fileId: fileId,
+                        uploadType: 'media',
+                        body: file
+                    });
+                } else {
+                    // Create new
+                    log('Creating new file...', 'info');
+                    const metadata = {
+                        name: 'goal-architect-sync.json',
+                        mimeType: 'application/json',
+                        parents: ['root']
+                    };
+                    
+                    const form = new FormData();
+                    form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+                    form.append('file', file);
+
+                    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: new Headers({Authorization: 'Bearer ' + gapi.client.getToken().access_token}),
+                        body: form
+                    });
+                    
+                    const result = await response.json();
+                    fileId = result.id;
+                    saveSyncInfo({fileId});
+                }
+
+                saveSyncInfo({lastUpload: new Date().toISOString()});
+                log('✓ Uploaded successfully!', 'success');
+                
+            } catch (err) {
+                log('✗ Upload failed: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function syncFromDrive() {
+            const btn = document.getElementById('downloadBtn');
+            btn.disabled = true;
+            log('Checking Drive for backup...', 'info');
+
+            try {
+                // List files
+                const response = await gapi.client.drive.files.list({
+                    q: "name='goal-architect-sync.json' and trashed=false",
+                    spaces: 'drive',
+                    fields: 'files(id, name, modifiedTime)',
+                    orderBy: 'modifiedTime desc'
+                });
+
+                const files = response.result.files;
+                if (!files || files.length === 0) {
+                    log('No backup found on Drive', 'error');
+                    return;
+                }
+
+                const fileId = files[0].id;
+                log('Found backup from ' + new Date(files[0].modifiedTime).toLocaleString(), 'info');
+
+                // Download content
+                const download = await gapi.client.drive.files.get({
+                    fileId: fileId,
+                    alt: 'media'
+                });
+
+                const backup = download.result;
+                
+                // Validate
+                if (!backup.data || !backup.version) {
+                    throw new Error('Invalid backup format');
+                }
+
+                // Confirm
+                const itemCount = 
+                    (backup.data.goals?.length || 0) + 
+                    (backup.data.birthdays?.length || 0) + 
+                    (backup.data.contacts?.length || 0) + 
+                    (backup.data.bookmarks?.length || 0) + 
+                    (backup.data.phd?.length || 0);
+
+                if (!confirm(`Restore ${itemCount} items from backup dated ${new Date(backup.exportedAt).toLocaleString()}?`)) {
+                    return;
+                }
+
+                // Restore
+                localStorage.setItem('goal_architect_goals', JSON.stringify(backup.data.goals || []));
+                localStorage.setItem('goal_architect_birthdays', JSON.stringify(backup.data.birthdays || []));
+                localStorage.setItem('goal_architect_contacts', JSON.stringify(backup.data.contacts || []));
+                localStorage.setItem('goal_architect_bookmarks', JSON.stringify(backup.data.bookmarks || []));
+                localStorage.setItem('goal_architect_phd', JSON.stringify(backup.data.phd || []));
+
+                saveSyncInfo({fileId, lastDownload: new Date().toISOString()});
+                log('✓ Restored successfully! Refresh other pages to see changes.', 'success');
+
+            } catch (err) {
+                log('✗ Download failed: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function disconnect() {
+            if (!confirm('Disconnect Google Drive? You will need to set up again to sync.')) return;
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(SYNC_INFO_KEY);
+            location.reload();
+        }
+
+        function resetSetup() {
+            localStorage.removeItem(CLIENT_ID_KEY);
+            localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(SYNC_INFO_KEY);
+            location.reload();
+        }
+
+        function log(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">${time}</span> <span class="log-${type}">${message}</span>`;
+            container.insertBefore(entry, container.firstChild);
+            
+            // Keep only last 20 entries
+            while (container.children.length > 20) {
+                container.removeChild(container.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
