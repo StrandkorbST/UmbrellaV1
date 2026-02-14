@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhD Tracker - Goal Architect</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-elevated: #1a1a25;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: #1f1f2e;
+            --text: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #5a5a6a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header-section {
+            margin-bottom: 32px;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .filter-tab {
+            padding: 6px 16px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-tab.active {
+            background: var(--surface-elevated);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .phd-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+
+        .phd-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phd-card:hover {
+            border-color: var(--border-subtle);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .phd-card.submitted {
+            border-color: var(--success);
+            opacity: 0.8;
+        }
+
+        .phd-card.urgent {
+            border-color: var(--danger);
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(239, 68, 68, 0.05) 100%);
+        }
+
+        .phd-card.warning {
+            border-color: var(--warning);
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(245, 158, 11, 0.05) 100%);
+        }
+
+        .phd-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .phd-title-section {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .phd-uni {
+            font-size: 0.875rem;
+            color: var(--accent);
+            font-weight: 600;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .phd-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .phd-location {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .phd-status {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-draft { background: var(--surface-elevated); color: var(--text-secondary); }
+        .status-progress { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+        .status-submitted { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-accepted { background: rgba(139, 92, 246, 0.1); color: #a78bfa; }
+        .status-rejected { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+
+        .deadline-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            background: var(--surface-elevated);
+        }
+
+        .deadline-urgent { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .deadline-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .deadline-soon { background: rgba(59, 130, 246, 0.1); color: var(--info); }
+
+        .phd-body {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .phd-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .section-content {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .phd-topic {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .requirements-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .req-tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: var(--surface-elevated);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+
+        .phd-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .phd-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .phd-link:hover {
+            color: var(--accent-hover);
+        }
+
+        .phd-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--surface-elevated);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .action-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .action-btn.danger:hover {
+            color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--accent);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .phd-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">◈</div>
+                <span>Goal Architect</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Goals</a>
+                <a href="birthdays.html" class="nav-link">Birthdays</a>
+                <a href="contacts.html" class="nav-link">Contacts</a>
+                <a href="bookmarks.html" class="nav-link">Bookmarks</a>
+                <a href="phd-tracker.html" class="nav-link active">PhD Tracker</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1 class="header-title">PhD Application Tracker</h1>
+            <p class="header-subtitle">Organize and track your academic applications</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">+ Add Application</button>
+            <button class="btn" onclick="exportData()">Export</button>
+            <button class="btn" onclick="importData()">Import</button>
+            
+            <div style="flex: 1;"></div>
+            
+            <div class="filter-tabs">
+                <button class="filter-tab active" onclick="filterStatus('all')">All</button>
+                <button class="filter-tab" onclick="filterStatus('draft')">Draft</button>
+                <button class="filter-tab" onclick="filterStatus('progress')">In Progress</button>
+                <button class="filter-tab" onclick="filterStatus('submitted')">Submitted</button>
+                <button class="filter-tab" onclick="filterStatus('accepted')">Accepted</button>
+            </div>
+        </div>
+
+        <div class="phd-grid" id="phdGrid">
+            <div class="empty-state">
+                <div class="empty-icon">🎓</div>
+                <h3>No applications yet</h3>
+                <p>Add PhD positions you're interested in to track deadlines and requirements</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add PhD Application</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">University / Institution *</label>
+                        <input type="text" class="form-input" id="uniName" placeholder="Stanford University">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Position Title *</label>
+                        <input type="text" class="form-input" id="positionTitle" placeholder="PhD in Computer Science">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="location" placeholder="Stanford, CA, USA">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Application Deadline *</label>
+                        <input type="date" class="form-input" id="deadline">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Application Link</label>
+                    <input type="url" class="form-input" id="appLink" placeholder="https://...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Research Topic / Description</label>
+                    <textarea class="form-textarea" id="topic" placeholder="Describe the research area, project, or group you're applying to..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="status">
+                        <option value="draft">Draft - Interested</option>
+                        <option value="progress">In Progress - Working on it</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Required Documents</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="CV" class="req-check">
+                            <span>CV</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="Transcript" class="req-check">
+                            <span>Transcript</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="Motivation Letter" class="req-check">
+                            <span>Motivation Letter</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="Research Proposal" class="req-check">
+                            <span>Research Proposal</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="References" class="req-check">
+                            <span>References</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="Writing Sample" class="req-check">
+                            <span>Writing Sample</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="Language Test" class="req-check">
+                            <span>Language Test</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" value="GRE/GMAT" class="req-check">
+                            <span>GRE/GMAT</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Additional Requirements / Notes</label>
+                    <textarea class="form-textarea" id="notes" placeholder="Specific requirements, contact persons, funding info, etc..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveApplication()">Save Application</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let applications = JSON.parse(localStorage.getItem('goal_architect_phd')) || [];
+        let currentFilter = 'all';
+        let editingId = null;
+
+        const statusLabels = {
+            draft: 'Draft',
+            progress: 'In Progress',
+            submitted: 'Submitted',
+            accepted: 'Accepted',
+            rejected: 'Rejected'
+        };
+
+        function saveData() {
+            localStorage.setItem('goal_architect_phd', JSON.stringify(applications));
+        }
+
+        function openModal(id = null) {
+            editingId = id;
+            document.getElementById('modal').classList.add('active');
+            
+            if (id) {
+                const app = applications.find(a => a.id === id);
+                document.getElementById('uniName').value = app.university;
+                document.getElementById('positionTitle').value = app.title;
+                document.getElementById('location').value = app.location || '';
+                document.getElementById('deadline').value = app.deadline;
+                document.getElementById('appLink').value = app.link || '';
+                document.getElementById('topic').value = app.topic || '';
+                document.getElementById('status').value = app.status;
+                document.getElementById('notes').value = app.notes || '';
+                
+                // Reset checkboxes
+                document.querySelectorAll('.req-check').forEach(cb => cb.checked = false);
+                // Check required ones
+                (app.requirements || []).forEach(req => {
+                    const cb = document.querySelector(`.req-check[value="${req}"]`);
+                    if (cb) cb.checked = true;
+                });
+            } else {
+                ['uniName', 'positionTitle', 'location', 'deadline', 'appLink', 'topic', 'notes'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+                document.getElementById('status').value = 'draft';
+                document.querySelectorAll('.req-check').forEach(cb => cb.checked = false);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        function saveApplication() {
+            const university = document.getElementById('uniName').value.trim();
+            const title = document.getElementById('positionTitle').value.trim();
+            const deadline = document.getElementById('deadline').value;
+            
+            if (!university || !title || !deadline) {
+                alert('Please fill in university, position title, and deadline');
+                return;
+            }
+
+            const requirements = Array.from(document.querySelectorAll('.req-check:checked')).map(cb => cb.value);
+
+            const data = {
+                id: editingId || Date.now(),
+                university,
+                title,
+                location: document.getElementById('location').value.trim(),
+                deadline,
+                link: document.getElementById('appLink').value.trim(),
+                topic: document.getElementById('topic').value.trim(),
+                status: document.getElementById('status').value,
+                requirements,
+                notes: document.getElementById('notes').value.trim(),
+                createdAt: editingId ? applications.find(a => a.id === editingId).createdAt : new Date().toISOString()
+            };
+
+            if (editingId) {
+                const idx = applications.findIndex(a => a.id === editingId);
+                applications[idx] = data;
+            } else {
+                applications.push(data);
+            }
+
+            saveData();
+            render();
+            closeModal();
+        }
+
+        function deleteApplication(id) {
+            if (!confirm('Delete this application?')) return;
+            applications = applications.filter(a => a.id !== id);
+            saveData();
+            render();
+        }
+
+        function getDaysUntil(deadline) {
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const dead = new Date(deadline);
+            dead.setHours(0,0,0,0);
+            return Math.ceil((dead - today) / (1000 * 60 * 60 * 24));
+        }
+
+        function filterStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.toggle('active', 
+                    (status === 'all' && tab.textContent === 'All') ||
+                    tab.textContent.toLowerCase().includes(statusLabels[status]?.toLowerCase())
+                );
+            });
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('phdGrid');
+            
+            let filtered = applications;
+            if (currentFilter !== 'all') {
+                filtered = applications.filter(a => a.status === currentFilter);
+            }
+
+            // Sort by deadline
+            filtered.sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎓</div>
+                        <h3>${currentFilter === 'all' ? 'No applications yet' : 'No ' + statusLabels[currentFilter] + ' applications'}</h3>
+                        <p>${currentFilter === 'all' ? 'Add PhD positions to track your applications' : 'Try a different filter'}</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(app => {
+                const daysLeft = getDaysUntil(app.deadline);
+                let cardClass = '';
+                let deadlineClass = '';
+                let deadlineText = '';
+
+                if (app.status === 'submitted' || app.status === 'accepted') {
+                    cardClass = 'submitted';
+                    deadlineText = `Submitted ${new Date(app.deadline).toLocaleDateString()}`;
+                } else if (daysLeft < 0) {
+                    cardClass = 'urgent';
+                    deadlineClass = 'deadline-urgent';
+                    deadlineText = `⚠ Overdue by ${Math.abs(daysLeft)} days`;
+                } else if (daysLeft <= 7) {
+                    cardClass = 'urgent';
+                    deadlineClass = 'deadline-urgent';
+                    deadlineText = `⏰ ${daysLeft} days left!`;
+                } else if (daysLeft <= 30) {
+                    cardClass = 'warning';
+                    deadlineClass = 'deadline-warning';
+                    deadlineText = `${daysLeft} days left`;
+                } else {
+                    deadlineClass = 'deadline-soon';
+                    deadlineText = `${daysLeft} days left`;
+                }
+
+                return `
+                    <div class="phd-card ${cardClass}">
+                        <div class="phd-header">
+                            <div class="phd-title-section">
+                                <div class="phd-uni">${escapeHtml(app.university)}</div>
+                                <div class="phd-title">${escapeHtml(app.title)}</div>
+                                ${app.location ? `<div class="phd-location">📍 ${escapeHtml(app.location)}</div>` : ''}
+                            </div>
+                            <div class="phd-status">
+                                <span class="status-badge status-${app.status}">${statusLabels[app.status]}</span>
+                                <span class="deadline-badge ${deadlineClass}">${deadlineText}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="phd-body">
+                            ${app.topic ? `
+                                <div class="phd-section">
+                                    <div class="section-label">Research Topic</div>
+                                    <div class="section-content phd-topic">${escapeHtml(app.topic)}</div>
+                                </div>
+                            ` : ''}
+                            
+                            ${app.requirements?.length ? `
+                                <div class="phd-section">
+                                    <div class="section-label">Required Documents</div>
+                                    <div class="requirements-list">
+                                        ${app.requirements.map(r => `<span class="req-tag">${escapeHtml(r)}</span>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${app.notes ? `
+                                <div class="phd-section">
+                                    <div class="section-label">Notes</div>
+                                    <div class="section-content">${escapeHtml(app.notes)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="phd-footer">
+                            ${app.link ? `<a href="${app.link}" target="_blank" class="phd-link">↗ View Opening</a>` : '<span></span>'}
+                            <div class="phd-actions">
+                                <button class="action-btn" onclick="openModal(${app.id})" title="Edit">✎</button>
+                                <button class="action-btn danger" onclick="deleteApplication(${app.id})" title="Delete">×</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportData() {
+            const data = JSON.stringify(applications, null, 2);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phd-applications-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (!Array.isArray(imported)) throw new Error('Invalid format');
+                        if (confirm(`Import ${imported.length} applications?`)) {
+                            applications = imported;
+                            saveData();
+                            render();
+                        }
+                    } catch (err) {
+                        alert('Import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        render();
+    </script>
+</body>
+</html>
