@@ -608,13 +608,21 @@
                 let fileId = JSON.parse(localStorage.getItem(SYNC_INFO_KEY) || '{}').fileId;
 
                 if (fileId) {
-                    // Update existing
+                    // Update existing - use fetch for media upload
                     log('Updating existing file...', 'info');
-                    await gapi.client.drive.files.update({
-                        fileId: fileId,
-                        uploadType: 'media',
-                        body: file
+                    const token = gapi.client.getToken().access_token;
+                    const response = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: content
                     });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Update failed: ${response.status} ${response.statusText}`);
+                    }
                 } else {
                     // Create new
                     log('Creating new file...', 'info');
@@ -634,6 +642,10 @@
                         body: form
                     });
                     
+                    if (!response.ok) {
+                        throw new Error(`Create failed: ${response.status} ${response.statusText}`);
+                    }
+                    
                     const result = await response.json();
                     fileId = result.id;
                     saveSyncInfo({fileId});
@@ -644,6 +656,7 @@
                 
             } catch (err) {
                 log('✗ Upload failed: ' + err.message, 'error');
+                console.error(err);
             } finally {
                 btn.disabled = false;
             }
@@ -709,6 +722,7 @@
 
             } catch (err) {
                 log('✗ Download failed: ' + err.message, 'error');
+                console.error(err);
             } finally {
                 btn.disabled = false;
             }
