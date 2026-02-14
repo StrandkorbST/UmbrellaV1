@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookmarks - Goal Architect</title>
+    <style>
+        /* Same CSS variables */
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-elevated: #1a1a25;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: #1f1f2e;
+            --text: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #5a5a6a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header-section {
+            margin-bottom: 32px;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--surface);
+            padding: 4px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .view-btn {
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .view-btn.active {
+            background: var(--surface-elevated);
+            color: var(--text);
+        }
+
+        .bookmarks-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 24px;
+        }
+
+        .sidebar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 88px;
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .category-item {
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.9375rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition);
+        }
+
+        .category-item:hover {
+            background: var(--surface-hover);
+        }
+
+        .category-item.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+        }
+
+        .category-count {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .bookmarks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .bookmark-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bookmark-card:hover {
+            border-color: var(--border-subtle);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .bookmark-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .bookmark-favicon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--surface-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .bookmark-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bookmark-title h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bookmark-url {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bookmark-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .bookmark-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .bookmark-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .bookmark-tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: var(--surface-elevated);
+            color: var(--text-secondary);
+        }
+
+        .bookmark-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 0.875rem;
+        }
+
+        .action-btn:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        /* List View */
+        .bookmarks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bookmark-row {
+            display: grid;
+            grid-template-columns: 40px 1fr auto auto;
+            gap: 16px;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+
+        .bookmark-row:hover {
+            border-color: var(--border-subtle);
+        }
+
+        .bookmark-row-info h3 {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .bookmark-row-info .url {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 968px) {
+            .bookmarks-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                position: static;
+            }
+            .nav-links { display: none; }
+        }
+
+        @media (max-width: 640px) {
+            .bookmarks-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">◈</div>
+                <span>Goal Architect</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Goals</a>
+                <a href="birthdays.html" class="nav-link">Birthdays</a>
+                <a href="contacts.html" class="nav-link">Contacts</a>
+                <a href="bookmarks.html" class="nav-link active">Bookmarks</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1 class="header-title">Bookmark Manager</h1>
+            <p class="header-subtitle">Save and organize interesting links</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">+ Add Bookmark</button>
+            <button class="btn" onclick="exportData()">Export</button>
+            <button class="btn" onclick="importData()">Import</button>
+            
+            <div style="flex: 1;"></div>
+            
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setView('grid')">Grid</button>
+                <button class="view-btn" onclick="setView('list')">List</button>
+            </div>
+        </div>
+
+        <div class="bookmarks-container">
+            <aside class="sidebar">
+                <div class="sidebar-title">Categories</div>
+                <div class="category-list" id="categoryList">
+                    <div class="category-item active" onclick="filterCategory('all')">
+                        <span>All Bookmarks</span>
+                        <span class="category-count" id="count-all">0</span>
+                    </div>
+                    <div class="category-item" onclick="filterCategory('uncategorized')">
+                        <span>Uncategorized</span>
+                        <span class="category-count" id="count-uncategorized">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="bookmarks-grid" id="bookmarksContainer">
+                <div class="empty-state">
+                    <div class="empty-icon">🔖</div>
+                    <h3>No bookmarks yet</h3>
+                    <p>Save interesting links to read later or reference</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Bookmark</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">URL</label>
+                    <input type="url" class="form-input" id="bookmarkUrl" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="bookmarkTitle" placeholder="Page title">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="bookmarkDesc" placeholder="Why is this interesting?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select class="form-select" id="bookmarkCategory">
+                        <option value="">Uncategorized</option>
+                        <option value="reading">Reading</option>
+                        <option value="work">Work</option>
+                        <option value="learning">Learning</option>
+                        <option value="tools">Tools</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="shopping">Shopping</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tags (comma separated)</label>
+                    <input type="text" class="form-input" id="bookmarkTags" placeholder="article, tutorial, reference...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveBookmark()">Save Bookmark</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookmarks = JSON.parse(localStorage.getItem('goal_architect_bookmarks')) || [];
+        let currentView = 'grid';
+        let currentCategory = 'all';
+        let editingId = null;
+
+        const categories = {
+            'reading': '📚 Reading',
+            'work': '💼 Work',
+            'learning': '🎓 Learning',
+            'tools': '🛠️ Tools',
+            'entertainment': '🎬 Entertainment',
+            'shopping': '🛒 Shopping',
+            'uncategorized': '📄 Uncategorized'
+        };
+
+        function saveData() {
+            localStorage.setItem('goal_architect_bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function openModal(id = null) {
+            editingId = id;
+            document.getElementById('modal').classList.add('active');
+            
+            if (id) {
+                const b = bookmarks.find(x => x.id === id);
+                document.getElementById('bookmarkUrl').value = b.url;
+                document.getElementById('bookmarkTitle').value = b.title;
+                document.getElementById('bookmarkDesc').value = b.description || '';
+                document.getElementById('bookmarkCategory').value = b.category || '';
+                document.getElementById('bookmarkTags').value = (b.tags || []).join(', ');
+            } else {
+                document.getElementById('bookmarkUrl').value = '';
+                document.getElementById('bookmarkTitle').value = '';
+                document.getElementById('bookmarkDesc').value = '';
+                document.getElementById('bookmarkCategory').value = '';
+                document.getElementById('bookmarkTags').value = '';
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        function saveBookmark() {
+            const url = document.getElementById('bookmarkUrl').value.trim();
+            const title = document.getElementById('bookmarkTitle').value.trim();
+            
+            if (!url || !title) {
+                alert('Please enter URL and title');
+                return;
+            }
+
+            // Auto-add https if missing
+            let finalUrl = url;
+            if (!url.startsWith('http')) {
+                finalUrl = 'https://' + url;
+            }
+
+            const data = {
+                id: editingId || Date.now(),
+                url: finalUrl,
+                title,
+                description: document.getElementById('bookmarkDesc').value.trim(),
+                category: document.getElementById('bookmarkCategory').value,
+                tags: document.getElementById('bookmarkTags').value.split(',').map(t => t.trim()).filter(t => t),
+                createdAt: editingId ? bookmarks.find(b => b.id === editingId).createdAt : new Date().toISOString()
+            };
+
+            if (editingId) {
+                const idx = bookmarks.findIndex(x => x.id === editingId);
+                bookmarks[idx] = data;
+            } else {
+                bookmarks.push(data);
+            }
+
+            saveData();
+            render();
+            closeModal();
+        }
+
+        function deleteBookmark(id) {
+            if (!confirm('Delete this bookmark?')) return;
+            bookmarks = bookmarks.filter(x => x.id !== id);
+            saveData();
+            render();
+        }
+
+        function getFavicon(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+            } catch {
+                return '';
+            }
+        }
+
+        function getDomain(url) {
+            try {
+                return new URL(url).hostname.replace('www.', '');
+            } catch {
+                return url;
+            }
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.toggle('active', 
+                    (view === 'grid' && btn.textContent === 'Grid') ||
+                    (view === 'list' && btn.textContent === 'List')
+                );
+            });
+            render();
+        }
+
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.toggle('active', 
+                    (cat === 'all' && item.textContent.includes('All')) ||
+                    (cat === 'uncategorized' && item.textContent.includes('Uncategorized')) ||
+                    (cat !== 'all' && cat !== 'uncategorized' && item.textContent.includes(categories[cat]?.split(' ')[1] || cat))
+                );
+            });
+            render();
+        }
+
+        function updateCategoryList() {
+            const counts = {};
+            bookmarks.forEach(b => {
+                const cat = b.category || 'uncategorized';
+                counts[cat] = (counts[cat] || 0) + 1;
+            });
+
+            document.getElementById('count-all').textContent = bookmarks.length;
+            document.getElementById('count-uncategorized').textContent = counts['uncategorized'] || 0;
+
+            // Add dynamic categories
+            const list = document.getElementById('categoryList');
+            // Remove old dynamic categories
+            list.querySelectorAll('.dynamic-cat').forEach(el => el.remove());
+
+            Object.keys(categories).forEach(key => {
+                if (key !== 'uncategorized' && counts[key]) {
+                    const div = document.createElement('div');
+                    div.className = 'category-item dynamic-cat';
+                    div.onclick = () => filterCategory(key);
+                    div.innerHTML = `
+                        <span>${categories[key]}</span>
+                        <span class="category-count">${counts[key]}</span>
+                    `;
+                    list.appendChild(div);
+                }
+            });
+        }
+
+        function render() {
+            updateCategoryList();
+            
+            const container = document.getElementById('bookmarksContainer');
+            let filtered = bookmarks;
+            
+            if (currentCategory !== 'all') {
+                if (currentCategory === 'uncategorized') {
+                    filtered = bookmarks.filter(b => !b.category);
+                } else {
+                    filtered = bookmarks.filter(b => b.category === currentCategory);
+                }
+            }
+
+            if (filtered.length === 0) {
+                container.className = currentView === 'grid' ? 'bookmarks-grid' : 'bookmarks-list';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔖</div>
+                        <h3>No bookmarks found</h3>
+                        <p>${currentCategory === 'all' ? 'Add your first bookmark to get started' : 'No bookmarks in this category'}</p>
+                    </div>`;
+                return;
+            }
+
+            container.className = currentView === 'grid' ? 'bookmarks-grid' : 'bookmarks-list';
+            
+            container.innerHTML = filtered.map(b => {
+                const domain = getDomain(b.url);
+                const favicon = getFavicon(b.url);
+                
+                if (currentView === 'list') {
+                    return `
+                        <div class="bookmark-row">
+                            <img src="${favicon}" class="bookmark-favicon" style="width: 24px; height: 24px; border-radius: 4px;" onerror="this.style.display='none'">
+                            <div class="bookmark-row-info">
+                                <h3>${escapeHtml(b.title)}</h3>
+                                <div class="url">${escapeHtml(domain)}</div>
+                            </div>
+                            <div class="bookmark-tags">
+                                ${b.category ? `<span class="bookmark-tag">${categories[b.category]?.split(' ')[1] || b.category}</span>` : ''}
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="action-btn" onclick="window.open('${b.url}', '_blank')">↗</button>
+                                <button class="action-btn" onclick="openModal(${b.id})">✎</button>
+                                <button class="action-btn" onclick="deleteBookmark(${b.id})">×</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bookmark-card">
+                        <div class="bookmark-header">
+                            <img src="${favicon}" class="bookmark-favicon" onerror="this.textContent='🔗'; this.style.display='flex'">
+                            <div class="bookmark-title">
+                                <h3>${escapeHtml(b.title)}</h3>
+                                <div class="bookmark-url">${escapeHtml(domain)}</div>
+                            </div>
+                        </div>
+                        
+                        ${b.description ? `<div class="bookmark-description">${escapeHtml(b.description)}</div>` : ''}
+                        
+                        <div class="bookmark-meta">
+                            <div class="bookmark-tags">
+                                ${b.category ? `<span class="bookmark-tag">${categories[b.category]?.split(' ')[1] || b.category}</span>` : ''}
+                                ${(b.tags || []).slice(0, 2).map(t => `<span class="bookmark-tag">${escapeHtml(t)}</span>`).join('')}
+                                ${(b.tags || []).length > 2 ? `<span class="bookmark-tag">+${b.tags.length - 2}</span>` : ''}
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="action-btn" onclick="window.open('${b.url}', '_blank')" title="Open">↗</button>
+                                <button class="action-btn" onclick="openModal(${b.id})" title="Edit">✎</button>
+                                <button class="action-btn" onclick="deleteBookmark(${b.id})" title="Delete">×</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportData() {
+            const data = JSON.stringify(bookmarks, null, 2);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `bookmarks-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (!Array.isArray(imported)) throw new Error('Invalid format');
+                        if (confirm(`Import ${imported.length} bookmarks?`)) {
+                            bookmarks = imported;
+                            saveData();
+                            render();
+                        }
+                    } catch (err) {
+                        alert('Import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        render();
+    </script>
+</body>
+</html>

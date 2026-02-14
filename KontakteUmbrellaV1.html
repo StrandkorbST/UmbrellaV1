@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacts - Goal Architect</title>
+    <style>
+        /* Same CSS variables */
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-elevated: #1a1a25;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: #1f1f2e;
+            --text: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #5a5a6a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header-section {
+            margin-bottom: 32px;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .contact-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: var(--transition);
+        }
+
+        .contact-card:hover {
+            border-color: var(--border-subtle);
+            box-shadow: var(--shadow);
+        }
+
+        .contact-header {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .contact-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .contact-main h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .contact-role {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .contact-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 4px;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.875rem;
+        }
+
+        .info-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            background: var(--surface-elevated);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            font-size: 0.875rem;
+        }
+
+        .info-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 2px;
+        }
+
+        .info-value {
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 16px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--surface-elevated);
+            color: var(--text-secondary);
+        }
+
+        .tag.important {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 24px 24px 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 0 24px 24px;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+        }
+
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .contacts-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">◈</div>
+                <span>Goal Architect</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Goals</a>
+                <a href="birthdays.html" class="nav-link">Birthdays</a>
+                <a href="contacts.html" class="nav-link active">Contacts</a>
+                <a href="bookmarks.html" class="nav-link">Bookmarks</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1 class="header-title">Contact CRM</h1>
+            <p class="header-subtitle">Keep track of important people and details</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" onclick="openModal()">+ Add Contact</button>
+            <button class="btn" onclick="exportData()">Export</button>
+            <button class="btn" onclick="importData()">Import</button>
+            
+            <div class="search-box">
+                <span class="search-icon">⌕</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search contacts..." oninput="render()">
+            </div>
+        </div>
+
+        <div class="contacts-grid" id="contactsGrid">
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>No contacts yet</h3>
+                <p>Add people you want to keep track of</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Contact</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-input" id="firstName">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input" id="lastName">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Role / Relationship</label>
+                    <input type="text" class="form-input" id="role" placeholder="e.g. Close Friend, Work Colleague, Mentor">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="email">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="phone">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" id="location" placeholder="City, Country">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Important Details</label>
+                    <textarea class="form-textarea" id="details" placeholder="Key facts to remember: allergies, preferences, family members, important dates, conversation topics..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tags (comma separated)</label>
+                    <input type="text" class="form-input" id="tags" placeholder="work, close-friend, gym-buddy, ...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveContact()">Save Contact</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let contacts = JSON.parse(localStorage.getItem('goal_architect_contacts')) || [];
+        let editingId = null;
+
+        function saveData() {
+            localStorage.setItem('goal_architect_contacts', JSON.stringify(contacts));
+        }
+
+        function openModal(id = null) {
+            editingId = id;
+            document.getElementById('modal').classList.add('active');
+            
+            if (id) {
+                const c = contacts.find(x => x.id === id);
+                document.getElementById('firstName').value = c.firstName || '';
+                document.getElementById('lastName').value = c.lastName || '';
+                document.getElementById('role').value = c.role || '';
+                document.getElementById('email').value = c.email || '';
+                document.getElementById('phone').value = c.phone || '';
+                document.getElementById('location').value = c.location || '';
+                document.getElementById('details').value = c.details || '';
+                document.getElementById('tags').value = (c.tags || []).join(', ');
+            } else {
+                ['firstName', 'lastName', 'role', 'email', 'phone', 'location', 'details', 'tags'].forEach(id => {
+                    document.getElementById(id).value = '';
+                });
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        function saveContact() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            
+            if (!firstName && !lastName) {
+                alert('Please enter at least a name');
+                return;
+            }
+
+            const data = {
+                id: editingId || Date.now(),
+                firstName,
+                lastName,
+                role: document.getElementById('role').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                location: document.getElementById('location').value.trim(),
+                details: document.getElementById('details').value.trim(),
+                tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (editingId) {
+                const idx = contacts.findIndex(x => x.id === editingId);
+                contacts[idx] = {...contacts[idx], ...data};
+            } else {
+                contacts.push(data);
+            }
+
+            saveData();
+            render();
+            closeModal();
+        }
+
+        function deleteContact(id) {
+            if (!confirm('Delete this contact?')) return;
+            contacts = contacts.filter(x => x.id !== id);
+            saveData();
+            render();
+        }
+
+        function render() {
+            const grid = document.getElementById('contactsGrid');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = contacts;
+            if (search) {
+                filtered = contacts.filter(c => 
+                    (c.firstName + ' ' + c.lastName).toLowerCase().includes(search) ||
+                    (c.role || '').toLowerCase().includes(search) ||
+                    (c.location || '').toLowerCase().includes(search) ||
+                    (c.tags || []).some(t => t.toLowerCase().includes(search))
+                );
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <h3>${search ? 'No matches found' : 'No contacts yet'}</h3>
+                        <p>${search ? 'Try a different search term' : 'Add people you want to keep track of'}</p>
+                    </div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(c => {
+                const name = `${c.firstName} ${c.lastName}`.trim();
+                const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+                
+                return `
+                    <div class="contact-card">
+                        <div class="contact-header">
+                            <div class="contact-avatar">${initials}</div>
+                            <div class="contact-main">
+                                <h3>${escapeHtml(name)}</h3>
+                                ${c.role ? `<div class="contact-role">${escapeHtml(c.role)}</div>` : ''}
+                            </div>
+                            <div class="contact-actions">
+                                <button class="btn btn-icon" onclick="openModal(${c.id})" style="padding: 6px 10px; font-size: 0.75rem;">Edit</button>
+                                <button class="btn btn-icon" onclick="deleteContact(${c.id})" style="padding: 6px 10px; font-size: 0.75rem; color: var(--danger);">Del</button>
+                            </div>
+                        </div>
+                        
+                        <div class="info-grid">
+                            ${c.email ? `
+                                <div class="info-row">
+                                    <div class="info-icon">@</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Email</div>
+                                        <div class="info-value">${escapeHtml(c.email)}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${c.phone ? `
+                                <div class="info-row">
+                                    <div class="info-icon">☎</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Phone</div>
+                                        <div class="info-value">${escapeHtml(c.phone)}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${c.location ? `
+                                <div class="info-row">
+                                    <div class="info-icon">📍</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Location</div>
+                                        <div class="info-value">${escapeHtml(c.location)}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            ${c.details ? `
+                                <div class="info-row">
+                                    <div class="info-icon">📝</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Details</div>
+                                        <div class="info-value" style="white-space: pre-wrap;">${escapeHtml(c.details)}</div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${c.tags?.length ? `
+                            <div class="tags">
+                                ${c.tags.map(t => `<span class="tag ${t.toLowerCase().includes('important') ? 'important' : ''}">${escapeHtml(t)}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function exportData() {
+            const data = JSON.stringify(contacts, null, 2);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `contacts-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if (!Array.isArray(imported)) throw new Error('Invalid format');
+                        if (confirm(`Import ${imported.length} contacts?`)) {
+                            contacts = imported;
+                            saveData();
+                            render();
+                        }
+                    } catch (err) {
+                        alert('Import failed: ' + err.message);
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        render();
+    </script>
+</body>
+</html>
