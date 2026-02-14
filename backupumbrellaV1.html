@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup & Restore - Goal Architect</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-elevated: #1a1a25;
+            --surface-hover: #22222f;
+            --border: #2a2a3a;
+            --border-subtle: #1f1f2e;
+            --text: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #5a5a6a;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .nav-link:hover {
+            background: var(--surface-hover);
+            color: var(--text);
+        }
+
+        .nav-link.active {
+            background: var(--surface-elevated);
+            color: var(--accent);
+            border-color: var(--border);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        .header-section {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .backup-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 0.9375rem;
+        }
+
+        .data-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .data-item {
+            background: var(--surface-elevated);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .data-count {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .data-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-subtle);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning);
+            color: var(--warning);
+        }
+
+        .btn-warning:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .restore-section {
+            border-top: 1px solid var(--border);
+            padding-top: 24px;
+            margin-top: 24px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .restore-info {
+            background: var(--surface-elevated);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .restore-info strong {
+            color: var(--text);
+        }
+
+        .last-backup {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            color: var(--success);
+        }
+
+        .status-message {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .status-message.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .data-summary { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .data-summary { grid-template-columns: repeat(2, 1fr); }
+            .backup-card { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">◈</div>
+                <span>Goal Architect</span>
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Goals</a>
+                <a href="birthdays.html" class="nav-link">Birthdays</a>
+                <a href="contacts.html" class="nav-link">Contacts</a>
+                <a href="bookmarks.html" class="nav-link">Bookmarks</a>
+                <a href="phd-tracker.html" class="nav-link">PhD Tracker</a>
+                <a href="backup.html" class="nav-link active">Backup</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-section">
+            <h1 class="header-title">Backup & Restore</h1>
+            <p class="header-subtitle">Export all your data in one file, or restore from a previous backup</p>
+        </div>
+
+        <div class="backup-card">
+            <div class="card-title">
+                <span>💾</span>
+                Export All Data
+            </div>
+            <p class="card-desc">Download a single file containing everything from all 5 modules:</p>
+            
+            <div class="data-summary" id="dataSummary">
+                <div class="data-item">
+                    <div class="data-count" id="countGoals">0</div>
+                    <div class="data-label">Goals</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-count" id="countBirthdays">0</div>
+                    <div class="data-label">Birthdays</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-count" id="countContacts">0</div>
+                    <div class="data-label">Contacts</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-count" id="countBookmarks">0</div>
+                    <div class="data-label">Bookmarks</div>
+                </div>
+                <div class="data-item">
+                    <div class="data-count" id="countPhd">0</div>
+                    <div class="data-label">PhD Apps</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="exportAll()">
+                <span>↓</span> Download Complete Backup
+            </button>
+
+            <div class="last-backup" id="lastBackup" style="display: none;">
+                <span>✓</span>
+                <span>Last backup: <span id="backupDate">Never</span></span>
+            </div>
+
+            <div class="status-message" id="exportStatus"></div>
+        </div>
+
+        <div class="backup-card">
+            <div class="card-title">
+                <span>↻</span>
+                Restore from Backup
+            </div>
+            <p class="card-desc">Import a previously exported backup file to restore all your data:</p>
+            
+            <div class="file-input-wrapper">
+                <button class="btn btn-warning" onclick="document.getElementById('restoreFile').click()">
+                    <span>↑</span> Select Backup File to Restore
+                </button>
+                <input type="file" id="restoreFile" accept=".json" onchange="restoreAll(this)">
+            </div>
+
+            <div class="restore-info">
+                <strong>⚠ Warning:</strong> Restoring will replace ALL current data with the backup contents. 
+                Consider exporting your current data first if you want to keep it.
+            </div>
+
+            <div class="status-message" id="restoreStatus"></div>
+        </div>
+    </div>
+
+    <script>
+        // Load all data counts on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSummary();
+            checkLastBackup();
+        });
+
+        function updateSummary() {
+            const goals = JSON.parse(localStorage.getItem('goal_architect_goals')) || [];
+            const birthdays = JSON.parse(localStorage.getItem('goal_architect_birthdays')) || [];
+            const contacts = JSON.parse(localStorage.getItem('goal_architect_contacts')) || [];
+            const bookmarks = JSON.parse(localStorage.getItem('goal_architect_bookmarks')) || [];
+            const phd = JSON.parse(localStorage.getItem('goal_architect_phd')) || [];
+
+            // Count totals (including nested goals)
+            const totalGoals = countAllGoals(goals);
+            
+            document.getElementById('countGoals').textContent = totalGoals;
+            document.getElementById('countBirthdays').textContent = birthdays.length;
+            document.getElementById('countContacts').textContent = contacts.length;
+            document.getElementById('countBookmarks').textContent = bookmarks.length;
+            document.getElementById('countPhd').textContent = phd.length;
+        }
+
+        function countAllGoals(goalList) {
+            let count = 0;
+            for (const g of goalList) {
+                count++;
+                if (g.children?.length) {
+                    count += countAllGoals(g.children);
+                }
+            }
+            return count;
+        }
+
+        function checkLastBackup() {
+            const lastBackup = localStorage.getItem('goal_architect_last_backup');
+            if (lastBackup) {
+                document.getElementById('lastBackup').style.display = 'flex';
+                document.getElementById('backupDate').textContent = new Date(lastBackup).toLocaleString();
+            }
+        }
+
+        function exportAll() {
+            const backup = {
+                version: '1.0',
+                exportedAt: new Date().toISOString(),
+                data: {
+                    goals: JSON.parse(localStorage.getItem('goal_architect_goals')) || [],
+                    birthdays: JSON.parse(localStorage.getItem('goal_architect_birthdays')) || [],
+                    contacts: JSON.parse(localStorage.getItem('goal_architect_contacts')) || [],
+                    bookmarks: JSON.parse(localStorage.getItem('goal_architect_bookmarks')) || [],
+                    phd: JSON.parse(localStorage.getItem('goal_architect_phd')) || []
+                }
+            };
+
+            const data = JSON.stringify(backup, null, 2);
+            const blob = new Blob([data], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `goal-architect-complete-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Save timestamp
+            localStorage.setItem('goal_architect_last_backup', new Date().toISOString());
+            checkLastBackup();
+
+            showStatus('exportStatus', '✓ Backup downloaded successfully! Keep this file safe.', 'success');
+        }
+
+        function restoreAll(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = event => {
+                try {
+                    const backup = JSON.parse(event.target.result);
+                    
+                    // Validate structure
+                    if (!backup.data || typeof backup.data !== 'object') {
+                        throw new Error('Invalid backup file format');
+                    }
+
+                    // Confirm with user
+                    const totalItems = 
+                        (backup.data.goals?.length || 0) + 
+                        (backup.data.birthdays?.length || 0) + 
+                        (backup.data.contacts?.length || 0) + 
+                        (backup.data.bookmarks?.length || 0) + 
+                        (backup.data.phd?.length || 0);
+
+                    if (!confirm(`Restore ${totalItems} items from backup dated ${new Date(backup.exportedAt).toLocaleString()}? This will replace all current data.`)) {
+                        input.value = '';
+                        return;
+                    }
+
+                    // Restore all data
+                    if (backup.data.goals) localStorage.setItem('goal_architect_goals', JSON.stringify(backup.data.goals));
+                    if (backup.data.birthdays) localStorage.setItem('goal_architect_birthdays', JSON.stringify(backup.data.birthdays));
+                    if (backup.data.contacts) localStorage.setItem('goal_architect_contacts', JSON.stringify(backup.data.contacts));
+                    if (backup.data.bookmarks) localStorage.setItem('goal_architect_bookmarks', JSON.stringify(backup.data.bookmarks));
+                    if (backup.data.phd) localStorage.setItem('goal_architect_phd', JSON.stringify(backup.data.phd));
+
+                    updateSummary();
+                    showStatus('restoreStatus', `✓ Successfully restored ${totalItems} items! Refresh other pages to see changes.`, 'success');
+                    
+                } catch (err) {
+                    showStatus('restoreStatus', '✗ Error: ' + err.message, 'error');
+                }
+                input.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function showStatus(elementId, message, type) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.className = `status-message status-${type} show`;
+            
+            setTimeout(() => {
+                el.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
