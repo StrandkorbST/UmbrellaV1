@@ -568,6 +568,24 @@
             color: var(--warning);
         }
 
+        /* Reset Badge */
+        .reset-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8125rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
         /* Action Buttons */
         .goal-actions {
             display: flex;
@@ -1152,6 +1170,60 @@
             localStorage.setItem('goal_architect_goals', JSON.stringify(goals));
         }
 
+        // Get current interval key for recurring goals
+        function getCurrentIntervalKey(interval) {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            
+            if (interval === 'day') {
+                return `${year}-${month}-${day}`;
+            } else if (interval === 'week') {
+                const startOfYear = new Date(year, 0, 1);
+                const pastDays = (now - startOfYear) / 86400000;
+                const weekNum = Math.ceil((pastDays + startOfYear.getDay() + 1) / 7);
+                return `${year}-W${String(weekNum).padStart(2, '0')}`;
+            } else if (interval === 'month') {
+                return `${year}-${month}`;
+            }
+            return `${year}-${month}-${day}`;
+        }
+
+        // Check if recurring goal should reset (new interval started)
+        function shouldResetRecurring(goal) {
+            if (goal.type !== 'recurring' || !goal.recurring) return false;
+            
+            const currentKey = getCurrentIntervalKey(goal.recurring.interval);
+            const lastCompletion = goal.recurring.completions && goal.recurring.completions.length > 0 
+                ? goal.recurring.completions[goal.recurring.completions.length - 1] 
+                : null;
+            
+            if (!lastCompletion) return false;
+            
+            const lastKey = getIntervalKeyFromDate(new Date(lastCompletion.date), goal.recurring.interval);
+            return currentKey !== lastKey;
+        }
+
+        // Get interval key from a specific date
+        function getIntervalKeyFromDate(date, interval) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            
+            if (interval === 'day') {
+                return `${year}-${month}-${day}`;
+            } else if (interval === 'week') {
+                const startOfYear = new Date(year, 0, 1);
+                const pastDays = (date - startOfYear) / 86400000;
+                const weekNum = Math.ceil((pastDays + startOfYear.getDay() + 1) / 7);
+                return `${year}-W${String(weekNum).padStart(2, '0')}`;
+            } else if (interval === 'month') {
+                return `${year}-${month}`;
+            }
+            return `${year}-${month}-${day}`;
+        }
+
         // Modal Functions
         function openModal(parentId = null) {
             currentParentId = parentId;
@@ -1214,9 +1286,10 @@
                             requiredPercent: config.requiredPercent || 80,
                             completions: [],
                             streak: 0,
-                            bestStreak: 0
+                            bestStreak: 0,
+                            currentIntervalKey: getCurrentIntervalKey(config.interval || 'week')
                         },
-                        health: 100
+                        health: 0  // Start at 0 instead of 100
                     };
 
                 case 'distance':
@@ -1382,6 +1455,7 @@
             }
 
             goal.health = calculateRecurringHealth(goal.recurring);
+            goal.recurring.currentIntervalKey = getCurrentIntervalKey(goal.recurring.interval);
             saveData();
             renderGoals();
             updateStats();
@@ -1399,12 +1473,18 @@
         }
 
         function calculateRecurringHealth(recurring) {
-            const recent = recurring.completions.slice(-14);
-            if (recent.length === 0) return 100;
+            // Only count completions from current interval
+            const currentKey = getCurrentIntervalKey(recurring.interval);
+            const currentCompletions = recurring.completions.filter(c => {
+                const completionKey = getIntervalKeyFromDate(new Date(c.date), recurring.interval);
+                return completionKey === currentKey;
+            });
             
-            const done = recent.filter(c => c.done).length;
-            const rate = (done / recent.length) * 100;
-            return Math.round((rate / recurring.requiredPercent) * 100);
+            const done = currentCompletions.filter(c => c.done).length;
+            const required = recurring.timesPerInterval;
+            
+            if (required === 0) return 100;
+            return Math.min(100, Math.round((done / required) * 100));
         }
 
         function moveDistance(id, amount, reason) {
@@ -1479,6 +1559,10 @@
                 return goal.distance.current;
             }
             if (goal.type === 'recurring') {
+                // Check for reset
+                if (shouldResetRecurring(goal)) {
+                    return 0; // Reset to 0 for new interval
+                }
                 return Math.min(100, Math.max(0, goal.health));
             }
             if (!goal.children?.length) return goal.completed ? 100 : 0;
@@ -1491,7 +1575,13 @@
         }
 
         function calculateHealth(goal) {
-            if (goal.type === 'recurring') return goal.health || 100;
+            if (goal.type === 'recurring') {
+                // Check for reset
+                if (shouldResetRecurring(goal)) {
+                    return 0; // Reset health for new interval
+                }
+                return goal.health || 0;
+            }
             if (goal.type === 'distance') {
                 const recent = goal.distance.history.slice(-3);
                 const avgChange = recent.length > 0 
@@ -1584,12 +1674,14 @@
                 const recent = goal.recurring.completions.slice(-7);
                 const today = new Date().toISOString().split('T')[0];
                 const doneToday = recent.find(c => c.date === today)?.done;
+                const isReset = shouldResetRecurring(goal);
                 
                 specialUI = `
                     <div class="streak-badge">
                         <span class="streak-icon">${goal.recurring.streak > 5 ? '🔥' : goal.recurring.streak > 2 ? '⚡' : '•'}</span>
                         <span>${goal.recurring.streak} streak</span>
                     </div>
+                    ${isReset ? '<span class="reset-badge">🔄 Reset</span>' : ''}
                     <button class="action-btn primary" onclick="doRecurring(${goal.id}, ${!doneToday})" title="${doneToday ? 'Undo today' : 'Mark done'}">
                         ${doneToday ? '↩' : '✓'}
                     </button>
